@@ -1,0 +1,29 @@
+﻿using DataAccess.DbAccess;
+using DataAccess.Models;
+
+namespace DataAccess.Data;
+public class UserData : IUserData
+{
+    private readonly ISqlDataAccess _db;
+
+    public UserData(ISqlDataAccess db)
+    {
+        _db = db;
+    }
+
+    public Task<IEnumerable<UserModel>> GetUsers() =>
+        _db.LoadData<UserModel, dynamic>("dbo.sp_User_GetAll", new { });
+
+    public async Task<UserModel?> GetUser(int id)
+    {
+        var result = await _db.LoadData<UserModel, dynamic>("dbo.sp_User_Get", new { Id = id });
+
+        return result.SingleOrDefault();
+    }
+
+    public Task InsertUser(UserModel user) => _db.SaveData("dbo.sp_User_Insert", new { user.FirstName, user.LastName });
+
+    public Task UpdateUser(UserModel user) => _db.SaveData("dbo.sp_User_Update", user);
+
+    public Task DeleteUser(int id) => _db.SaveData("dbo.sp_User_Delete", new { id });
+}
